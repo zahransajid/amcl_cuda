@@ -4,12 +4,17 @@
 #include <stdexcept>
 #include <chrono>
 #include <opencv2/opencv.hpp>
+#include "robot.hpp"
 
 GpuLidar2D *lidarPtr;
+RobotState goalState;
+
 bool ready = false;
 static void onMouse(int event, int x, int y, int, void *)
 {
-    lidarPtr->simulateLidar(x, y, 0.0f, 300.0f);
+    // lidarPtr->simulateLidar(x, y, 0.0f, 300.0f);
+    goalState.x = static_cast<float>(x);
+    goalState.y = static_cast<float>(y);
     ready = true;
 }
 
@@ -28,9 +33,7 @@ int main()
     {
         cv::cvtColor(img, img, cv::COLOR_GRAY2BGR);
     }
-    GpuLidar2D lidar(data, width, height, 1000);
-    lidarPtr = &lidar;
-    lidar.simulateLidar(177, 229, 0.0f, 300.0f);
+    Robot diffBot(data, width, height, 177.0f, 229.0f, 0.0f);
     int ray_count;
     int key = 0;
     cv::imshow("Lidar Simulation", img);
@@ -40,7 +43,10 @@ int main()
         cv::Mat img_copy = img.clone();
         if (ready == true)
         {
-            float *distances = lidar.getPoints(ray_count);
+            diffBot.setHeading(goalState.x, goalState.y);
+            diffBot.updatePosition(0.16f);
+            diffBot.renderBot(img_copy);
+            float *distances = diffBot.getLidarData(ray_count);
             for (int i = 0; i < ray_count; ++i)
             {
                 cv::circle(img_copy, cv::Point((int)distances[i * 2], (int)distances[i * 2 + 1]), 1, cv::Scalar(0, 0, 255), -1);
