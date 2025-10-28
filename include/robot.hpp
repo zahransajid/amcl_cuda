@@ -9,7 +9,7 @@ private:
   RobotState dr_state_; // State from dead reckoning
   RobotState goal_;
   // We'll assume a pixel-to-centimeter ratio of 1:10 for simplicity
-  float max_motor_rpm = 50.0f;    // in rpm
+  float max_motor_rpm = 500.0f;   // in rpm
   float wheel_base_width = 20.0f; // in cm
   float wheel_radius = 3.0f;      // in cm
   float max_motor_velocity =
@@ -24,6 +24,8 @@ public:
   void renderBot(cv::Mat &image);
   float *getLidarData(int &num_points);
   void renderLidar(cv::Mat &image);
+  void renderParticles(cv::Mat &image, Particle *particles, int particle_count,
+                       int top);
   RobotState getState();
   RobotState getDRState();
   // RobotState getState();

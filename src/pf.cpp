@@ -1,9 +1,25 @@
 #include "pf.hpp"
+#include <algorithm>
+#include <iterator>
 
 ParticleFilter::ParticleFilter(uint8_t *map_data, int map_width, int map_height)
-    : map_width_(map_width), map_height_(map_height), map_data_(map_data) {
+    : map_width_(map_width), map_height_(map_height) {
+  this->map_data_.reserve(map_width_ * map_height_);
+  std::copy(map_data, map_data + map_width_ * map_height_,
+            std::back_inserter(this->map_data_));
   particles_.resize(config_.PARTICLE_COUNT);
-  this->initializeParticles();
+  cudaMalloc(&d_map_data_, map_width_ * map_height_ * sizeof(uint8_t));
+  cudaMemcpy(d_map_data_, map_data_.data(),
+             map_width_ * map_height_ * sizeof(uint8_t),
+             cudaMemcpyHostToDevice);
+  cudaMalloc(&d_particle_data_, config_.PARTICLE_COUNT * sizeof(Particle));
+}
+
+ParticleFilter::~ParticleFilter() {
+  cudaFree(d_map_data_);
+  cudaFree(d_particle_data_);
+  if (ray_count_ > 0)
+    cudaFree(d_lidar_data_);
 }
 
 void ParticleFilter::initializeParticles() {
@@ -24,23 +40,10 @@ void ParticleFilter::initializeParticles() {
   }
 }
 
-void ParticleFilter::drawParticles(cv::Mat &image, int top) {
-  if (top > 0) {
-    std::sort(particles_.begin(), particles_.end(),
-              [](const Particle &a, const Particle &b) {
-                return a.weight > b.weight;
-              });
-    for (int i = 0; i < top; ++i) {
-      cv::circle(image,
-                 cv::Point2f(particles_[i].state.x, particles_[i].state.y), 2,
-                 cv::Scalar(255, 0, 0), -1);
-    }
-  } else {
-    for (const auto &particle : particles_) {
-      cv::circle(image, cv::Point2f(particle.state.x, particle.state.y), 2,
-                 cv::Scalar(255, 0, 0), -1);
-    }
-  }
+void ParticleFilter::sortParticles() {
+  std::sort(
+      particles_.begin(), particles_.end(),
+      [](const Particle &a, const Particle &b) { return a.weight > b.weight; });
 }
 
 void ParticleFilter::normalizeWeights() {

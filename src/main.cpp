@@ -19,7 +19,7 @@ static void onMouse(int event, int x, int y, int, void *) {
 int main() {
   int width, height, channels;
   unsigned char *data =
-      stbi_load("data/map.png", &width, &height, &channels, 0);
+      stbi_load("data/map3.png", &width, &height, &channels, 0);
   if (!data) {
     std::cout << "Failed to load image" << std::endl;
     throw std::runtime_error("Failed to load image");
@@ -35,52 +35,46 @@ int main() {
   pf.initializeParticles();
   int ray_count;
   int key = 0;
+  float iter_time;
   cv::imshow("Lidar Simulation", img);
   cv::setMouseCallback("Lidar Simulation", onMouse);
+  std::chrono::steady_clock::time_point last_time =
+      std::chrono::steady_clock::now();
   int n = 0;
   while (true) {
     n++;
     cv::Mat img_copy = img.clone();
     if (ready == true) {
       diffBot.setHeading(goalState.x, goalState.y);
-      // diffBot.setHeading(177.0f, 229.0f);
-      diffBot.updatePosition(0.16f);
-      pf.updatePositions(diffBot.getDRState(), 0.16f);
+      iter_time = std::chrono::duration_cast<std::chrono::duration<float>>(
+                      std::chrono::steady_clock::now() - last_time)
+                      .count();
+      diffBot.updatePosition(iter_time);
+      pf.updatePositions(diffBot.getDRState(), iter_time);
       float *distances = diffBot.getLidarData(ray_count);
-      Particle a, b, c, d;
-      a.state = diffBot.getState();
-      b.state = diffBot.getState();
-      c.state = diffBot.getState();
-      b.state.x += 10.0f;
-      c.state.y += 10.0f;
-      d.state.x = 0.0f;
-      d.state.y = 0.0f;
-      d.state.theta = 0.0f;
-      // Particle particles_array[4] = {a,b,c,d};
-      // diffBot.lidar.correlateParticles(particles_array, 4);
-      // std::cout << "Particle correlations: " << particles_array[0].weight <<
-      // ", "
-      //           << particles_array[1].weight << ", "
-      //           << particles_array[2].weight << ", "
-      //           << particles_array[3].weight << std::endl;
       diffBot.renderBot(img_copy);
       diffBot.renderLidar(img_copy);
-      RobotState robot_state;
-      robot_state = diffBot.getState();
-    }
-    diffBot.lidar.correlateParticles(pf.getParticles(), pf.getParticleCount());
 
-    // for(int i = 0; i < 5; ++i)
-    // {
-    //   std::cout << "Top particle " << i << " weight: " <<
-    //   pf.getParticles()[i].weight << std::endl;
-    // }
-    if (n % 50 == 0) {
-      pf.resample();
+      if (n % 10 == 0) {
+        pf.correlateParticles(distances, ray_count);
+        pf.resample();
+      }
+      diffBot.renderParticles(img_copy, pf.getParticles(),
+                              pf.getParticleCount(), 500);
     }
-    pf.drawParticles(img_copy, 100);
+    iter_time = std::chrono::duration_cast<std::chrono::duration<float>>(
+                    std::chrono::steady_clock::now() - last_time)
+                    .count();
+    float fps = 1.0f / iter_time;
+    last_time = std::chrono::steady_clock::now();
+    cv::putText(img_copy, "FPS: " + std::to_string(static_cast<int>(fps)),
+                cv::Point(10, 30), cv::FONT_HERSHEY_SIMPLEX, 0.5,
+                cv::Scalar(0, 0, 255), 2);
     cv::imshow("Lidar Simulation", img_copy);
-    int key = cv::waitKey(16);
+    int frame_wait = 16 - static_cast<int>(iter_time * 1000.0f);
+    if (frame_wait < 1)
+      frame_wait = 1;
+    int key = cv::waitKey(frame_wait);
     if (key == 27) // ESC key
       break;
   }

@@ -20,9 +20,9 @@ add_library(robotsim STATIC src/robot.cpp)
 target_link_libraries(robotsim ${OpenCV_LIBS})
 target_include_directories(robotsim PUBLIC ${CMAKE_SOURCE_DIR}/include)
 
-add_library(particle_filter src/pf.cpp)
-target_link_libraries(particle_filter ${OpenCV_LIBS})
+add_library(particle_filter src/pf.cpp src/pf_kernels.cu)
 target_include_directories(particle_filter PUBLIC ${CMAKE_SOURCE_DIR}/include)
+set_property(TARGET particle_filter PROPERTY CUDA_ARCHITECTURES 80 86)
 
 add_library(gpu_lidar STATIC src/gpu_lidar_2d.cpp src/gpu_lidar_kernels.cu)
 target_include_directories(gpu_lidar PUBLIC ${CMAKE_SOURCE_DIR}/include)

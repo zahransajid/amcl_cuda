@@ -85,4 +85,13 @@ void Robot::renderLidar(cv::Mat &image) {
   }
 }
 
+void Robot::renderParticles(cv::Mat &image, Particle *particles,
+                            int particle_count, int top) {
+  for (int i = 0; i < top && i < particle_count; ++i) {
+    const Particle &p = particles[i];
+    cv::circle(image, cv::Point2f(p.state.x, p.state.y), 2,
+               cv::Scalar(255, 0, 0), -1);
+  }
+}
+
 RobotState Robot::getDRState() { return dr_state_; }
