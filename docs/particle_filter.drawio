@@ -1,0 +1,25 @@
+<mxfile host="Electron" modified="2025-10-27T15:50:11.802Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/21.5.0 Chrome/112.0.5615.204 Electron/24.5.1 Safari/537.36" etag="25UGybuWIA-ynE_oJP5X" version="21.5.0" type="device">
+  <diagram name="Page-1" id="RtD22vE6oVvF1Z4SnZkb">
+    <mxGraphModel dx="1182" dy="723" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="1" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="hq_muE9tl4Z7Hy5aISgC-2" value="&lt;h1&gt;Particle filters&lt;/h1&gt;&lt;p&gt;We aim to calculate the updated probability distribution over the state space based on collected data.&lt;/p&gt;&lt;p&gt;The data used is the set of time indexed sensor observations `z_t` and control inputs `u_t`&lt;/p&gt;&lt;p&gt;The posterior (updated probability) for the state at time t `x_t` is written as `Bel(x_t)`. We can represent this belief as a set of discrete weighted particles/samples `S_t`&lt;/p&gt;&lt;p&gt;`S_t = {(x_t^(i), w_t^(i)) | i = 1..n}`&lt;/p&gt;&lt;p&gt;Where `x_t^(i)` is a discrete state of the robot represented by its cartesian coordinates and yaw (`x, y, \theta`) and `w_t^(i)` is the importance weight of that sample.&lt;/p&gt;&lt;p&gt;By the markov assumption, the posterior can be computed efficiently by recursively&lt;br&gt;updating the belief whenever new information is received.&lt;/p&gt;&lt;p&gt;To calulate the posterior, we draw sample `x_(t-1)^(i)` based on `w_(t-1)^(i)`.&lt;/p&gt;&lt;p&gt;Since we draw the sample based on weight, (with replacement) we essentially consider poses that are more likely and perform transitions on them more than states that are less likely.&lt;/p&gt;&lt;p&gt;We combine `x_(t-1)^(i)` with `u_(t-1)` to get `x_(t)^(j)` the proposed state at the current moment `p( x_t^j | x_(t-1)^i, u_(t-1))`&lt;/p&gt;&lt;p&gt;We then weight the sample&amp;nbsp;`x_(t)^(j)` with the importance weight `p(z_t | x_(t)^(j))` which represents the likelihood of the sample correlating with the sensor measurement `z_t`&lt;/p&gt;&lt;p&gt;With these we now have a sample drawn from the posterior belief (updated according to the sensor data)&lt;/p&gt;&lt;p&gt;Repeat this for all samples and normalise weights to get a new sample set&lt;/p&gt;" style="text;html=1;strokeColor=none;fillColor=none;spacing=5;spacingTop=-20;whiteSpace=wrap;overflow=hidden;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="60" y="50" width="290" height="730" as="geometry" />
+        </mxCell>
+        <mxCell id="hq_muE9tl4Z7Hy5aISgC-5" value="`x_(t-1)^i`" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;" parent="1" vertex="1">
+          <mxGeometry x="470" y="210" width="70" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="ipv7_XIw_3g9zY4JtBkt-1" value="`x_(t)^j`" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;" parent="1" vertex="1">
+          <mxGeometry x="650" y="320" width="70" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="ipv7_XIw_3g9zY4JtBkt-2" value="`u_t`" style="endArrow=classic;html=1;rounded=0;entryX=0.051;entryY=0.311;entryDx=0;entryDy=0;entryPerimeter=0;" parent="1" source="hq_muE9tl4Z7Hy5aISgC-5" target="ipv7_XIw_3g9zY4JtBkt-1" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="550" y="360" as="sourcePoint" />
+            <mxPoint x="600" y="310" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

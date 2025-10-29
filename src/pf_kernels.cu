@@ -45,13 +45,15 @@ void ParticleFilter::correlateParticles(float *sensor_data, int ray_count) {
     cudaMalloc(&d_lidar_data_, ray_count_ * 2 * sizeof(float));
   }
   cudaMemcpy(d_particle_data_, this->particles_.data(),
-             config_.PARTICLE_COUNT * sizeof(Particle), cudaMemcpyHostToDevice);
+             config_.MAX_PARTICLE_COUNT * sizeof(Particle),
+             cudaMemcpyHostToDevice);
   cudaMemcpy(d_lidar_data_, sensor_data, ray_count_ * 2 * sizeof(float),
              cudaMemcpyHostToDevice);
-  int n_blocks = (config_.PARTICLE_COUNT + 63) / 64;
+  int n_blocks = (config_.MAX_PARTICLE_COUNT + 63) / 64;
   correlateParticleKernel<<<n_blocks, 64>>>(
-      d_map_data_, map_width_, map_height_, config_.PARTICLE_COUNT,
+      d_map_data_, map_width_, map_height_, config_.MAX_PARTICLE_COUNT,
       d_particle_data_, d_lidar_data_, ray_count_);
   cudaMemcpy(this->particles_.data(), d_particle_data_,
-             config_.PARTICLE_COUNT * sizeof(Particle), cudaMemcpyDeviceToHost);
+             config_.MAX_PARTICLE_COUNT * sizeof(Particle),
+             cudaMemcpyDeviceToHost);
 }

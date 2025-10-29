@@ -22,6 +22,7 @@ public:
   void resample();
   void sortParticles();
   void correlateParticles(float *sensor_data, int ray_count);
+  RobotState calculateEstimatedPose();
 
 private:
   pf_config config_;

@@ -26,6 +26,7 @@ public:
   void renderLidar(cv::Mat &image);
   void renderParticles(cv::Mat &image, Particle *particles, int particle_count,
                        int top);
+  void renderEstimatedPose(cv::Mat &image, RobotState estimated_pose);
   RobotState getState();
   RobotState getDRState();
   // RobotState getState();

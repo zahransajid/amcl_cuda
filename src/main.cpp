@@ -19,7 +19,7 @@ static void onMouse(int event, int x, int y, int, void *) {
 int main() {
   int width, height, channels;
   unsigned char *data =
-      stbi_load("data/map3.png", &width, &height, &channels, 0);
+      stbi_load("data/map.png", &width, &height, &channels, 0);
   if (!data) {
     std::cout << "Failed to load image" << std::endl;
     throw std::runtime_error("Failed to load image");
@@ -52,15 +52,20 @@ int main() {
       diffBot.updatePosition(iter_time);
       pf.updatePositions(diffBot.getDRState(), iter_time);
       float *distances = diffBot.getLidarData(ray_count);
+      if (n == 0)
+        pf.correlateParticles(distances, ray_count);
       diffBot.renderBot(img_copy);
       diffBot.renderLidar(img_copy);
 
       if (n % 10 == 0) {
-        pf.correlateParticles(distances, ray_count);
         pf.resample();
+        pf.correlateParticles(distances, ray_count);
       }
+      pf.sortParticles();
+      RobotState estimated_pose = pf.calculateEstimatedPose();
+      diffBot.renderEstimatedPose(img_copy, estimated_pose);
       diffBot.renderParticles(img_copy, pf.getParticles(),
-                              pf.getParticleCount(), 500);
+                              pf.getParticleCount(), 100);
     }
     iter_time = std::chrono::duration_cast<std::chrono::duration<float>>(
                     std::chrono::steady_clock::now() - last_time)

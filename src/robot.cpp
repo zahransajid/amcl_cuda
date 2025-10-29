@@ -95,3 +95,11 @@ void Robot::renderParticles(cv::Mat &image, Particle *particles,
 }
 
 RobotState Robot::getDRState() { return dr_state_; }
+
+void Robot::renderEstimatedPose(cv::Mat &image, RobotState estimated_pose) {
+  cv::Point2f line_end =
+      cv::Point2f(estimated_pose.x + 30 * cosf(estimated_pose.theta),
+                  estimated_pose.y + 30 * sinf(estimated_pose.theta));
+  cv::line(image, cv::Point2f(estimated_pose.x, estimated_pose.y), line_end,
+           cv::Scalar(255, 255, 0), 2);
+}

@@ -1,5 +1,8 @@
 struct pf_config {
-  int PARTICLE_COUNT = 500;
-  float POSITION_NOISE = 0.1f;
-  float ANGLE_NOISE = 0.01f;
+  int MAX_PARTICLE_COUNT = 2000;
+  int MIN_PARTICLE_COUNT = 1000;
+  float POSITION_NOISE_STD_DEV = 100.0f;
+  float ANGLE_NOISE_STD_DEV = 0.1f;
+  float RESAMPLE_THRESHOLD = 0.9f;
+  float CALCULATE_POSE_POPULATION_FRACTION = 0.05f;
 };
