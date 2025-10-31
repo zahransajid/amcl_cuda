@@ -33,7 +33,7 @@ private:
   uint8_t *d_map_data_;
   Particle *d_particle_data_;
   int d_particle_count_;
-  float *d_lidar_data_;
+  float *d_lidar_data_ = nullptr;
   int ray_count_ = 0;
   RobotState previous_movement_;
   bool is_first_update_ = true;

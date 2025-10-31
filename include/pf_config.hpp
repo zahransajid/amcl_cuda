@@ -3,6 +3,6 @@ struct pf_config {
   int MIN_PARTICLE_COUNT = 1000;
   float POSITION_NOISE_STD_DEV = 100.0f;
   float ANGLE_NOISE_STD_DEV = 0.1f;
-  float RESAMPLE_THRESHOLD = 0.9f;
+  float RESAMPLE_THRESHOLD = 0.7f;
   float CALCULATE_POSE_POPULATION_FRACTION = 0.05f;
 };

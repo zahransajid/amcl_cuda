@@ -19,6 +19,13 @@ __global__ void correlateParticleKernel(uint8_t *map, int width, int height,
     }
     int lidar_map_x = (int)(p.state.x + ct * lidar_x + st * lidar_y);
     int lidar_map_y = (int)(p.state.y + (-st) * lidar_x + ct * lidar_y);
+    // if (lidar_map_x > 0 && lidar_map_x < width && lidar_map_y > 0 &&
+    //     lidar_map_y < height) {
+    //   uint8_t pixel_value = map[lidar_map_y * width + lidar_map_x];
+    //   if (pixel_value < 30) {
+    //     score += 1.0f;
+    //   }
+    // }
 
     for (int i = 0; i < 9; i++) {
       int offset_x = (i % 3) - 1;
@@ -41,7 +48,8 @@ __global__ void correlateParticleKernel(uint8_t *map, int width, int height,
 void ParticleFilter::correlateParticles(float *sensor_data, int ray_count) {
   if (this->ray_count_ != ray_count) {
     this->ray_count_ = ray_count;
-    cudaFree(d_lidar_data_);
+    if (d_lidar_data_ != nullptr)
+      cudaFree(d_lidar_data_);
     cudaMalloc(&d_lidar_data_, ray_count_ * 2 * sizeof(float));
   }
   cudaMemcpy(d_particle_data_, this->particles_.data(),
