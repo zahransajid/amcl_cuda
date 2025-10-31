@@ -1,4 +1,5 @@
 #include "pf.hpp"
+#include "cuda_safety.hpp"
 #include <algorithm>
 #include <iostream>
 #include <iterator>
@@ -10,18 +11,20 @@ ParticleFilter::ParticleFilter(uint8_t *map_data, int map_width, int map_height)
   std::copy(map_data, map_data + map_width_ * map_height_,
             std::back_inserter(this->map_data_));
   particles_.resize(config_.MAX_PARTICLE_COUNT);
-  cudaMalloc(&d_map_data_, map_width_ * map_height_ * sizeof(uint8_t));
-  cudaMemcpy(d_map_data_, map_data_.data(),
-             map_width_ * map_height_ * sizeof(uint8_t),
-             cudaMemcpyHostToDevice);
-  cudaMalloc(&d_particle_data_, config_.MAX_PARTICLE_COUNT * sizeof(Particle));
+  CUDA_SAFE_CALL(
+      cudaMalloc(&d_map_data_, map_width_ * map_height_ * sizeof(uint8_t)));
+  CUDA_SAFE_CALL(cudaMemcpy(d_map_data_, map_data_.data(),
+                            map_width_ * map_height_ * sizeof(uint8_t),
+                            cudaMemcpyHostToDevice));
+  CUDA_SAFE_CALL(cudaMalloc(&d_particle_data_,
+                            config_.MAX_PARTICLE_COUNT * sizeof(Particle)));
 }
 
 ParticleFilter::~ParticleFilter() {
-  cudaFree(d_map_data_);
-  cudaFree(d_particle_data_);
+  CUDA_SAFE_CALL(cudaFree(d_map_data_));
+  CUDA_SAFE_CALL(cudaFree(d_particle_data_));
   if (ray_count_ > 0)
-    cudaFree(d_lidar_data_);
+    CUDA_SAFE_CALL(cudaFree(d_lidar_data_));
 }
 
 void ParticleFilter::initializeParticles() {

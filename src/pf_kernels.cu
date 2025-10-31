@@ -1,3 +1,4 @@
+#include "cuda_safety.hpp"
 #include "pf.hpp"
 
 __global__ void correlateParticleKernel(uint8_t *map, int width, int height,
@@ -49,19 +50,21 @@ void ParticleFilter::correlateParticles(float *sensor_data, int ray_count) {
   if (this->ray_count_ != ray_count) {
     this->ray_count_ = ray_count;
     if (d_lidar_data_ != nullptr)
-      cudaFree(d_lidar_data_);
-    cudaMalloc(&d_lidar_data_, ray_count_ * 2 * sizeof(float));
+      CUDA_SAFE_CALL(cudaFree(d_lidar_data_));
+    CUDA_SAFE_CALL(cudaMalloc(&d_lidar_data_, ray_count_ * 2 * sizeof(float)));
   }
-  cudaMemcpy(d_particle_data_, this->particles_.data(),
-             config_.MAX_PARTICLE_COUNT * sizeof(Particle),
-             cudaMemcpyHostToDevice);
-  cudaMemcpy(d_lidar_data_, sensor_data, ray_count_ * 2 * sizeof(float),
-             cudaMemcpyHostToDevice);
+  CUDA_SAFE_CALL(cudaMemcpy(d_particle_data_, this->particles_.data(),
+                            config_.MAX_PARTICLE_COUNT * sizeof(Particle),
+                            cudaMemcpyHostToDevice));
+  CUDA_SAFE_CALL(cudaMemcpy(d_lidar_data_, sensor_data,
+                            ray_count_ * 2 * sizeof(float),
+                            cudaMemcpyHostToDevice));
   int n_blocks = (config_.MAX_PARTICLE_COUNT + 63) / 64;
   correlateParticleKernel<<<n_blocks, 64>>>(
       d_map_data_, map_width_, map_height_, config_.MAX_PARTICLE_COUNT,
       d_particle_data_, d_lidar_data_, ray_count_);
-  cudaMemcpy(this->particles_.data(), d_particle_data_,
-             config_.MAX_PARTICLE_COUNT * sizeof(Particle),
-             cudaMemcpyDeviceToHost);
+  CHECK_LAUNCH_ERROR();
+  CUDA_SAFE_CALL(cudaMemcpy(this->particles_.data(), d_particle_data_,
+                            config_.MAX_PARTICLE_COUNT * sizeof(Particle),
+                            cudaMemcpyDeviceToHost));
 }

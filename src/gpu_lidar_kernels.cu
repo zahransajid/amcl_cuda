@@ -1,3 +1,4 @@
+#include "cuda_safety.hpp"
 #include "gpu_lidar_2d.hpp"
 #include <cstdint>
 __global__ void traceRaysKernel(uint8_t *map, float *intersections, int width,
@@ -48,6 +49,8 @@ void GpuLidar2D::simulateLidar(int x, int y, float theta, float max_distance) {
   traceRaysKernel<<<n_blocks, 64>>>(d_map_data_, d_intersections_, map_width_,
                                     map_height_, x, y, theta, ray_count_,
                                     max_distance);
-  cudaMemcpy(h_intersections_.data(), d_intersections_,
-             2 * ray_count_ * sizeof(float), cudaMemcpyDeviceToHost);
+  CHECK_LAUNCH_ERROR();
+  CUDA_SAFE_CALL(cudaMemcpy(h_intersections_.data(), d_intersections_,
+                            2 * ray_count_ * sizeof(float),
+                            cudaMemcpyDeviceToHost));
 }
